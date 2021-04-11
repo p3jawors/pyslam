@@ -221,12 +221,17 @@ def import_from(module, name, method=None):
     try:      
         imported_module = __import__(module, fromlist=[name])
         imported_name = getattr(imported_module, name)
+        # print('method: ', method)
         if method is None: 
+            # print('method is none returning imported_name')
             return imported_name
         else:
+            # print('method is NOT none')
             return getattr(imported_name, method) 
     except: 
+        # print('method: ', method)
         if method is not None: 
+            # print('import failed and method is not None')
             name = name + '.' + method 
         Printer.orange('WARNING: cannot import ' + name + ' from ' + module + ', check the file TROUBLESHOOTING.md')    
         return None   

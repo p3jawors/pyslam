@@ -1,7 +1,7 @@
 """
-* This file is part of PYSLAM 
+* This file is part of PYSLAM
 *
-* Copyright (C) 2016-present Luigi Freda <luigi dot freda at gmail dot com> 
+* Copyright (C) 2016-present Luigi Freda <luigi dot freda at gmail dot com>
 *
 * PYSLAM is free software: you can redistribute it and/or modify
 * it under the terms of the GNU General Public License as published by
@@ -32,7 +32,7 @@ from dataset import dataset_factory
 #from mplot2d import Mplot2d
 from mplot_thread import Mplot2d, Mplot3d
 
-from feature_tracker import feature_tracker_factory, FeatureTrackerTypes 
+from feature_tracker import feature_tracker_factory, FeatureTrackerTypes
 from feature_manager import feature_manager_factory
 from feature_types import FeatureDetectorTypes, FeatureDescriptorTypes, FeatureInfo
 from feature_matcher import feature_matcher_factory, FeatureMatcherTypes
@@ -44,7 +44,7 @@ from feature_tracker_configs import FeatureTrackerConfigs
 """
 use or not pangolin (if you want to use it then you need to install it by using the script install_thirdparty.sh)
 """
-kUsePangolin = False  
+kUsePangolin = False
 
 if kUsePangolin:
     from viewer3D import Viewer3D
@@ -68,15 +68,21 @@ if __name__ == "__main__":
 
     num_features=2000  # how many features do you want to detect and track?
 
-    # select your tracker configuration (see the file feature_tracker_configs.py) 
+    # select your tracker configuration (see the file feature_tracker_configs.py)
     # LK_SHI_TOMASI, LK_FAST
     # SHI_TOMASI_ORB, FAST_ORB, ORB, BRISK, AKAZE, FAST_FREAK, SIFT, ROOT_SIFT, SURF, SUPERPOINT, FAST_TFEAT
-    tracker_config = FeatureTrackerConfigs.LK_SHI_TOMASI
+    # tracker_config = FeatureTrackerConfigs.LK_SHI_TOMASI
+    tracker_config = FeatureTrackerConfigs.RFNET
+    # print('\n\n\nTRACKER CONFIG: ', tracker_config)
+    # tracker_config = FeatureTrackerConfigs.DISK
+    # tracker_config = FeatureTrackerConfigs.LFNET
     tracker_config['num_features'] = num_features
-    
+
+    # print('initialize feature tracker in main_vo')
     feature_tracker = feature_tracker_factory(**tracker_config)
 
-    # create visual odometry object 
+    # create visual odometry object
+    # print('pass feature tracker to vo in main_vo')
     vo = VisualOdometry(cam, groundtruth, feature_tracker)
 
     is_draw_traj_img = True
@@ -91,10 +97,10 @@ if __name__ == "__main__":
     else:
         plt3d = Mplot3d(title='3D trajectory')
 
-    is_draw_err = True 
+    is_draw_err = True
     err_plt = Mplot2d(xlabel='img id', ylabel='m',title='error')
 
-    is_draw_matched_points = True 
+    is_draw_matched_points = True
     matched_points_plt = Mplot2d(xlabel='img id', ylabel='# matches',title='# matches')
 
     img_id = 0
@@ -104,7 +110,7 @@ if __name__ == "__main__":
 
         if img is not None:
 
-            vo.track(img, img_id)  # main VO function 
+            vo.track(img, img_id)  # main VO function
 
             if(img_id > 2):	       # start drawing from the third image (when everything is initialized and flows in a normal way)
 
@@ -120,36 +126,36 @@ if __name__ == "__main__":
                     cv2.rectangle(traj_img, (10, 20), (600, 60), (0, 0, 0), -1)
                     text = "Coordinates: x=%2fm y=%2fm z=%2fm" % (x, y, z)
                     cv2.putText(traj_img, text, (20, 40), cv2.FONT_HERSHEY_PLAIN, 1, (255, 255, 255), 1, 8)
-                    # show 		
+                    # show
                     cv2.imshow('Trajectory', traj_img)
 
-                if is_draw_3d:           # draw 3d trajectory 
+                if is_draw_3d:           # draw 3d trajectory
                     if kUsePangolin:
-                        viewer3D.draw_vo(vo)   
+                        viewer3D.draw_vo(vo)
                     else:
                         plt3d.drawTraj(vo.traj3d_gt,'ground truth',color='r',marker='.')
                         plt3d.drawTraj(vo.traj3d_est,'estimated',color='g',marker='.')
                         plt3d.refresh()
 
-                if is_draw_err:         # draw error signals 
+                if is_draw_err:         # draw error signals
                     errx = [img_id, math.fabs(x_true-x)]
                     erry = [img_id, math.fabs(y_true-y)]
-                    errz = [img_id, math.fabs(z_true-z)] 
+                    errz = [img_id, math.fabs(z_true-z)]
                     err_plt.draw(errx,'err_x',color='g')
                     err_plt.draw(erry,'err_y',color='b')
                     err_plt.draw(errz,'err_z',color='r')
-                    err_plt.refresh()    
+                    err_plt.refresh()
 
                 if is_draw_matched_points:
                     matched_kps_signal = [img_id, vo.num_matched_kps]
-                    inliers_signal = [img_id, vo.num_inliers]                    
+                    inliers_signal = [img_id, vo.num_inliers]
                     matched_points_plt.draw(matched_kps_signal,'# matches',color='b')
-                    matched_points_plt.draw(inliers_signal,'# inliers',color='g')                    
-                    matched_points_plt.refresh()                    
+                    matched_points_plt.draw(inliers_signal,'# inliers',color='g')
+                    matched_points_plt.refresh()
 
 
-            # draw camera image 
-            cv2.imshow('Camera', vo.draw_img)				
+            # draw camera image
+            cv2.imshow('Camera', vo.draw_img)
 
         # press 'q' to exit!
         if cv2.waitKey(1) & 0xFF == ord('q'):
@@ -165,11 +171,11 @@ if __name__ == "__main__":
     if is_draw_3d:
         if not kUsePangolin:
             plt3d.quit()
-        else: 
+        else:
             viewer3D.quit()
     if is_draw_err:
         err_plt.quit()
     if is_draw_matched_points is not None:
         matched_points_plt.quit()
-                
+
     cv2.destroyAllWindows()
