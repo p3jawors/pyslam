@@ -104,9 +104,19 @@ if __name__ == "__main__":
     matched_points_plt = Mplot2d(xlabel='img id', ylabel='# matches',title='# matches')
 
     img_id = 0
+    save_data = True
+    errors = []
+    traj = []
+    traj_gt = []
+    if save_data:
+        save_name = 'RFNET-KITTI-03'
+        # cap = cv2.VideoCapture(0)
+        video = cv2.VideoWriter('%s.mp4' % save_name, cv2.VideoWriter_fourcc(*'MP4V'), 10, (1241, 376), True)
+
     while dataset.isOk():
 
         img = dataset.getImage(img_id)
+        # print('\n\n\n\n\n\n\n\n\n ', np.asarray(img).shape)
 
         if img is not None:
 
@@ -153,9 +163,18 @@ if __name__ == "__main__":
                     matched_points_plt.draw(inliers_signal,'# inliers',color='g')
                     matched_points_plt.refresh()
 
+                if save_data:
+                    errors.append([errx[1], erry[1], errz[1]])
+                    # print('errx: ', errx)
+                    # print('errors: ', errors[-1])
+                    traj.append([x, y, z])
+                    traj_gt.append([x_true, y_true, z_true])
 
             # draw camera image
             cv2.imshow('Camera', vo.draw_img)
+            # ret, frame = cap.read()
+            # frame = cv2.flip(frame, 0)
+            video.write(vo.draw_img)
 
         # press 'q' to exit!
         if cv2.waitKey(1) & 0xFF == ord('q'):
@@ -164,6 +183,14 @@ if __name__ == "__main__":
 
     #print('press a key in order to exit...')
     #cv2.waitKey(0)
+    if save_data:
+        errors = np.asarray(errors)
+        traj = np.asarray(traj)
+        traj_gt = np.asarray(traj_gt)
+        print('Saving data to %s' % save_name)
+        np.savez_compressed('%s.npz' % save_name, errors=errors, traj=traj, traj_gt=traj_gt)
+        # cap.release()
+        video.release()
 
     if is_draw_traj_img:
         print('saving map.png')

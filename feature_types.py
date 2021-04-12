@@ -193,4 +193,4 @@ class FeatureInfo(object):
     #
     #TODO set these values for rfnet
     norm_type[FeatureDescriptorTypes.RFNET] = cv2.NORM_L2
-    max_descriptor_distance[FeatureDescriptorTypes.RFNET] = 3.1          # RFNET
+    max_descriptor_distance[FeatureDescriptorTypes.RFNET] = 4.0          # RFNET
