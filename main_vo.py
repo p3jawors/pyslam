@@ -73,6 +73,8 @@ if __name__ == "__main__":
     # SHI_TOMASI_ORB, FAST_ORB, ORB, BRISK, AKAZE, FAST_FREAK, SIFT, ROOT_SIFT, SURF, SUPERPOINT, FAST_TFEAT
     # tracker_config = FeatureTrackerConfigs.LK_SHI_TOMASI
     tracker_config = FeatureTrackerConfigs.RFNET
+    # tracker_config = FeatureTrackerConfigs.SIFT
+    # tracker_config = FeatureTrackerConfigs.ORB
     # print('\n\n\nTRACKER CONFIG: ', tracker_config)
     # tracker_config = FeatureTrackerConfigs.DISK
     # tracker_config = FeatureTrackerConfigs.LFNET
@@ -109,13 +111,19 @@ if __name__ == "__main__":
     traj = []
     traj_gt = []
     if save_data:
-        save_name = 'RFNET-KITTI-03'
+        save_name = 'RFNET-KITTI-00'
         # cap = cv2.VideoCapture(0)
-        video = cv2.VideoWriter('%s.mp4' % save_name, cv2.VideoWriter_fourcc(*'MP4V'), 10, (1241, 376), True)
+    first_pass = True
 
     while dataset.isOk():
 
         img = dataset.getImage(img_id)
+
+        if save_data and first_pass:
+            print('VIDEO SHAPE: ', img.shape)
+            # video = cv2.VideoWriter('%s.mp4' % save_name, cv2.VideoWriter_fourcc(*'MP4V'), 10, (1241, 376), True)
+            video = cv2.VideoWriter('%s.mp4' % save_name, cv2.VideoWriter_fourcc(*'MP4V'), 10, (img.shape[0], img.shape[1]), True)
+            first_pass = False
         # print('\n\n\n\n\n\n\n\n\n ', np.asarray(img).shape)
 
         if img is not None:
@@ -171,10 +179,10 @@ if __name__ == "__main__":
                     traj_gt.append([x_true, y_true, z_true])
 
             # draw camera image
+            video.write(vo.draw_img)
             cv2.imshow('Camera', vo.draw_img)
             # ret, frame = cap.read()
             # frame = cv2.flip(frame, 0)
-            video.write(vo.draw_img)
 
         # press 'q' to exit!
         if cv2.waitKey(1) & 0xFF == ord('q'):
@@ -191,6 +199,7 @@ if __name__ == "__main__":
         np.savez_compressed('%s.npz' % save_name, errors=errors, traj=traj, traj_gt=traj_gt)
         # cap.release()
         video.release()
+        print('Video Released')
 
     if is_draw_traj_img:
         print('saving map.png')
@@ -205,4 +214,7 @@ if __name__ == "__main__":
     if is_draw_matched_points is not None:
         matched_points_plt.quit()
 
+    print('Waiting to destroy cv windows')
+    cv2.waitKey(1)
     cv2.destroyAllWindows()
+    cv2.waitKey(1)
