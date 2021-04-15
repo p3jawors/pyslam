@@ -54,6 +54,8 @@ if kUsePangolin:
 
 if __name__ == "__main__":
 
+    save_name = 'RFNET-KITTI-03'
+
     config = Config()
 
     dataset = dataset_factory(config.dataset_settings)
@@ -110,9 +112,6 @@ if __name__ == "__main__":
     errors = []
     traj = []
     traj_gt = []
-    if save_data:
-        save_name = 'RFNET-KITTI-00'
-        # cap = cv2.VideoCapture(0)
     first_pass = True
 
     while dataset.isOk():
@@ -120,11 +119,8 @@ if __name__ == "__main__":
         img = dataset.getImage(img_id)
 
         if save_data and first_pass:
-            print('VIDEO SHAPE: ', img.shape)
-            # video = cv2.VideoWriter('%s.mp4' % save_name, cv2.VideoWriter_fourcc(*'MP4V'), 10, (1241, 376), True)
-            video = cv2.VideoWriter('%s.mp4' % save_name, cv2.VideoWriter_fourcc(*'MP4V'), 10, (img.shape[0], img.shape[1]), True)
+            video = cv2.VideoWriter('%s.mp4' % save_name, cv2.VideoWriter_fourcc(*'MP4V'), 10, (int(img.shape[1]), int(img.shape[0])), True)
             first_pass = False
-        # print('\n\n\n\n\n\n\n\n\n ', np.asarray(img).shape)
 
         if img is not None:
 
